@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ditto Forge</title>
+<meta name="description" content="Community view of the Bittensor SN118 generator competition: board and scored rounds. Unofficial.">
+<style>
+:root {
+  --bg: #f7f7f5; --card: #ffffff; --ink: #1c1d1f; --muted: #6b6f76; --line: #e3e3df;
+  --accent: #2f6fdf; --split: #2e9e6a; --easy: #c9ccd2; --hard: #d9822b; --dup: #b04a5a;
+  --me: #fff6d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131416; --card: #1b1d20; --ink: #e8e9eb; --muted: #9298a1; --line: #2b2e33;
+    --accent: #6f9cf0; --split: #45b884; --easy: #4a4f57; --hard: #e09a4f; --dup: #d06a7a;
+    --me: #3a3320;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131416; --card: #1b1d20; --ink: #e8e9eb; --muted: #9298a1; --line: #2b2e33;
+  --accent: #6f9cf0; --split: #45b884; --easy: #4a4f57; --hard: #e09a4f; --dup: #d06a7a;
+  --me: #3a3320;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+header h1 { font-size: 24px; margin: 0 0 4px; }
+.sub { color: var(--muted); font-size: 13px; }
+.sub a { color: inherit; }
+.strip { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 24px; }
+.pill { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 13px; }
+.pill b { font-variant-numeric: tabular-nums; }
+h2 { font-size: 17px; margin: 32px 0 10px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; }
+tr.me td { background: var(--me); }
+.hk { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; cursor: pointer; }
+.hk:hover { color: var(--accent); }
+.tag { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin-left: 6px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.rounds { display: grid; gap: 12px; }
+.round { padding: 12px 14px; }
+.round .top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; margin-bottom: 8px; }
+.round .top b { font-size: 15px; }
+.row { display: grid; grid-template-columns: 150px 56px 1fr 92px; gap: 10px; align-items: center; padding: 4px 0; font-size: 13px; }
+.row.me { background: var(--me); border-radius: 6px; }
+.bar { display: flex; height: 12px; border-radius: 3px; overflow: hidden; background: var(--line); }
+.bar span { display: block; height: 100%; }
+.counts { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.score { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+details { margin-top: 8px; font-size: 13px; }
+summary { cursor: pointer; color: var(--muted); }
+details table td, details table th { padding: 4px 8px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 0; font-size: 13px; }
+input { font: inherit; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; width: 260px; max-width: 100%; }
+button { font: inherit; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+.err { color: var(--dup); padding: 12px; }
+.muted { color: var(--muted); }
+footer { margin-top: 40px; font-size: 12px; color: var(--muted); }
+svg.spark { vertical-align: middle; }
+.how { padding: 12px 16px; font-size: 14px; }
+.how ol { margin: 6px 0 0; padding-left: 20px; }
+.how li { margin: 3px 0; }
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chart { padding: 12px 14px; min-width: 0; }
+.chart h3 { font-size: 14px; margin: 0 0 2px; }
+.chart .sub { margin-bottom: 6px; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.chart text, .hist text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.grid { stroke: var(--line); stroke-width: 1; }
+.hit { fill: transparent; cursor: crosshair; }
+.hit:hover { fill: var(--ink); fill-opacity: .06; }
+#tip { position: fixed; z-index: 10; pointer-events: none; background: var(--card); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font-size: 12px; line-height: 1.5;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12); display: none; max-width: 260px; }
+#tip .k { color: var(--muted); }
+tr.clk { cursor: pointer; }
+tr.clk:hover td { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+tr.detail td { background: var(--bg); white-space: normal; }
+.caret { color: var(--muted); font-size: 11px; display: inline-block; width: 12px; }
+@media (max-width: 640px) {
+  .row { grid-template-columns: 1fr 52px; }
+  .row .bar { grid-column: 1 / -1; }
+  .row .counts { grid-column: 1 / -1; text-align: left; }
+  .charts { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Ditto Forge</h1>
+    <div class="sub" style="font-size:15px;margin-bottom:4px">The SN118 generator board: miners who forge the cases that make Ditto agents better.</div>
+    <div class="sub">Community view, not official. Data from the public API
+      <a href="https://platform-api.heyditto.ai/api/v1/generator/board" rel="noopener">platform-api.heyditto.ai</a>,
+      refreshed every minute. <span id="upd"></span></div>
+    <div class="tools">
+      <input id="mine" placeholder="Your hotkey (to highlight it)" autocomplete="off" spellcheck="false">
+      <button id="theme" type="button">Theme</button>
+    </div>
+  </header>
+
+  <div class="strip" id="strip"></div>
+
+  <details class="card how"><summary><b>How the generator competition works</b></summary>
+    <ol>
+      <li>Each round, every generator miner sends a pack of new memory questions (cases) built from notes.</li>
+      <li>A panel of the top 5 Ditto agents answers every case. A miner's own agents never count for its cases.</li>
+      <li>A case <b>splits</b> when at least 2 agents solve it but not all. Cases all agents solve are worth little;
+        cases fewer than 2 agents solve cut the score hard (squared penalty). Copies of earlier cases score nothing.</li>
+      <li>Credit is higher when agents score low on a solvable case, and higher again when the top agent fails it.</li>
+      <li>The board score is the miner's latest scored round in the last 7 days. Top ranks share the generator reward.</li>
+      <li>Split cases become candidates for future Ditto benchmarks: that is how generators make agents better.</li>
+    </ol>
+    <div class="sub">Source: the public rules in the Ditto datagen repo (generator-competition.md, score.go).</div>
+  </details>
+
+  <h2>Board</h2>
+  <div class="card scroll"><table id="board"><tbody><tr><td class="muted">Loading…</td></tr></tbody></table></div>
+  <p class="sub">Score is the miner's latest scored round in the last 7 days. "Trend" shows its recent round scores,
+    oldest left. Click a row for its round history; click a hotkey to copy it.</p>
+
+  <h2>Trends</h2>
+  <div class="charts">
+    <div class="card chart"><h3>Case mix per round</h3>
+      <div class="sub">Share of all cases in the round. More green = generators make better tests.</div>
+      <div class="legend" style="margin:0 0 6px">
+        <span><i class="sw" style="background:var(--split)"></i>Split</span>
+        <span><i class="sw" style="background:var(--easy)"></i>All solved</span>
+        <span><i class="sw" style="background:var(--hard)"></i>Unsolved</span>
+        <span><i class="sw" style="background:var(--dup)"></i>Duplicate</span>
+      </div>
+      <div id="mix" class="muted">Loading…</div></div>
+    <div class="card chart"><h3>Panel agent scores per round</h3>
+      <div class="sub">Mean score on the round's cases. Lower can mean harder cases, not weaker agents.</div>
+      <div class="legend" style="margin:0 0 6px">
+        <span><i class="sw" style="background:var(--accent)"></i>Best agent</span>
+        <span><i class="sw" style="background:var(--muted)"></i>Panel mean</span>
+      </div>
+      <div id="solve" class="muted">Loading…</div></div>
+  </div>
+
+  <h2>Recent scored rounds</h2>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--split)"></i>Split: 2+ agents solved it, but not all</span>
+    <span><i class="sw" style="background:var(--easy)"></i>All solved</span>
+    <span><i class="sw" style="background:var(--hard)"></i>Unsolved: fewer than 2 solved</span>
+    <span><i class="sw" style="background:var(--dup)"></i>Duplicate</span>
+  </div>
+  <div class="rounds" id="rounds"><div class="card err muted">Loading…</div></div>
+
+  <div id="tip" role="tooltip"></div>
+  <footer>Unofficial page made by a miner for other miners. Not linked to Ditto. Numbers are shown as the API gives them.</footer>
+</main>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const short = (hk) => hk ? hk.slice(0, 6) + "…" + hk.slice(-4) : "default";
+const f3 = (x) => x == null ? "–" : Number(x).toFixed(3);
+const ago = (t) => {
+  if (!t) return "–";
+  const s = (Date.now() - new Date(t)) / 1000;
+  if (s < 90) return Math.round(s) + "s ago";
+  if (s < 5400) return Math.round(s / 60) + " min ago";
+  if (s < 172800) return Math.round(s / 3600) + " h ago";
+  return Math.round(s / 86400) + " d ago";
+};
+const get = async (p) => {
+  const r = await fetch("/api/gen?p=" + encodeURIComponent(p));
+  if (!r.ok) throw new Error(p + ": HTTP " + r.status);
+  return r.json();
+};
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+
+let mine = store.get("mine") || "";
+$("#mine").value = mine;
+$("#mine").addEventListener("input", (e) => { mine = e.target.value.trim(); store.set("mine", mine); render(); });
+
+const themes = ["auto", "light", "dark"];
+let theme = store.get("theme") || "auto";
+const applyTheme = () => {
+  if (theme === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.dataset.theme = theme;
+  $("#theme").textContent = "Theme: " + theme;
+};
+applyTheme();
+$("#theme").onclick = () => { theme = themes[(themes.indexOf(theme) + 1) % 3]; store.set("theme", theme); applyTheme(); };
+
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-hk]");
+  if (!el) {
+    const tr = e.target.closest("tr[data-row]");
+    if (tr) { const k = tr.dataset.row; open.has(k) ? open.delete(k) : open.add(k); render(); }
+    return;
+  }
+  navigator.clipboard?.writeText(el.dataset.hk).then(() => {
+    const old = el.textContent; el.textContent = "copied"; setTimeout(() => (el.textContent = old), 900);
+  }).catch(() => {});
+});
+
+const isMe = (hk) => mine && hk && (hk === mine || (mine.length >= 6 && hk.startsWith(mine)));
+const who = (o) => {
+  const name = o.name || o.name_handle;
+  const hk = o.miner_hotkey;
+  if (!hk) return `<span class="muted">default</span>`;
+  return (name ? esc(name) + " " : "") + `<span class="hk" data-hk="${esc(hk)}" title="${esc(hk)}">${esc(short(hk))}</span>`;
+};
+
+function spark(recent) {
+  const pts = (recent || []).slice().sort((a, b) => a.round_index - b.round_index).map((r) => r.score ?? 0);
+  if (pts.length < 2) return "";
+  const w = 90, h = 22, max = Math.max(...pts, 0.01);
+  const xy = pts.map((v, i) => `${(i / (pts.length - 1) * w).toFixed(1)},${(h - 2 - v / max * (h - 4)).toFixed(1)}`);
+  return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"><polyline points="${xy.join(" ")}" fill="none" stroke="var(--accent)" stroke-width="1.5"/></svg>`;
+}
+
+let data = { board: null, list: null, rounds: [], hist: null };
+const open = new Set();
+// #m=<hotkey> opens that miner's history, so a row can be shared as a link
+const hm = decodeURIComponent(location.hash).match(/^#m=(\w+)/);
+if (hm) open.add(hm[1]);
+
+// tooltip: any element with data-tip shows it; works for mouse and tap
+const tip = $("#tip");
+const showTip = (ev, html) => {
+  tip.innerHTML = html; tip.style.display = "block";
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+};
+document.addEventListener("pointermove", (ev) => {
+  const t = ev.target.closest?.("[data-tip]");
+  if (t) showTip(ev, t.dataset.tip); else tip.style.display = "none";
+});
+document.addEventListener("pointerdown", (ev) => {
+  const t = ev.target.closest?.("[data-tip]");
+  if (t) showTip(ev, t.dataset.tip);
+});
+const tipLine = (k, v) => `<div><span class="k">${k}</span> ${v}</div>`;
+
+const rnd = (x) => Math.round(x * 10) / 10;
+const pct = (x) => Math.round(x * 100) + "%";
+
+function xTicks(items, X, h) {
+  const n = items.length, step = Math.max(1, Math.ceil(n / 5));
+  return items.map((r, i) => (i % step === 0 || i === n - 1) && !(i !== n - 1 && n - 1 - i < step / 2)
+    ? `<text x="${rnd(X(i))}" y="${h - 4}" text-anchor="middle">${r.round}</text>` : "").join("");
+}
+
+function mixChart(el, rows) {
+  const W = el.clientWidth || 300, H = 190, L = 34, R = 6, T = 6, B = 22;
+  const n = rows.length, bw = (W - L - R) / n, ih = H - T - B;
+  const X = (i) => L + bw * (i + 0.5);
+  const Y = (v) => T + ih * (1 - v);
+  let g = [0, 0.5, 1].map((v) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/>
+    <text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${pct(v)}</text>`).join("");
+  const segs = [["split", "--split"], ["trivial", "--easy"], ["unsolved", "--hard"], ["duplicate", "--dup"]];
+  const gap = 2, w = Math.max(2, bw - (bw > 6 ? 2 : 1));
+  rows.forEach((r, i) => {
+    const tot = r.split + r.trivial + r.unsolved + r.duplicate;
+    let acc = 0;
+    for (const [k, c] of segs) {
+      const v = r[k] / tot;
+      if (v <= 0) continue;
+      const y0 = Y(acc), y1 = Y(acc + v);
+      const hgt = Math.max(0, y0 - y1 - (acc > 0 ? gap : 0));
+      g += `<rect x="${rnd(X(i) - w / 2)}" y="${rnd(y1)}" width="${rnd(w)}" height="${rnd(hgt)}" rx="${acc + v >= 0.999 ? 2 : 0}" fill="var(${c})"/>`;
+      acc += v;
+    }
+    const t = `<b>Round ${r.round}</b> · ${ago(r.scored_at)}` + tipLine("Generators", r.generators)
+      + tipLine("Split", `${r.split} (${pct(r.split / tot)})`) + tipLine("All solved", r.trivial)
+      + tipLine("Unsolved", r.unsolved) + (r.duplicate ? tipLine("Duplicate", r.duplicate) : "")
+      + tipLine("Total cases", tot) + (r.best_column ? tipLine("Best generator", short(r.best_column)) : "");
+    g += `<rect class="hit" x="${rnd(L + bw * i)}" y="${T}" width="${rnd(bw)}" height="${ih}" data-tip="${esc(t)}"/>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Case mix per round">${g}${xTicks(rows, X, H)}</svg>`;
+}
+
+function solveChart(el, rows) {
+  rows = rows.filter((r) => r.panel_mean != null);
+  const W = el.clientWidth || 300, H = 190, L = 34, R = 6, T = 6, B = 22;
+  const n = rows.length, ih = H - T - B;
+  const vals = rows.flatMap((r) => [r.panel_mean, r.panel_best]);
+  const lo = Math.max(0, Math.floor((Math.min(...vals) - 0.05) * 10) / 10), hi = Math.min(1, Math.ceil((Math.max(...vals) + 0.02) * 10) / 10);
+  const X = (i) => L + (n > 1 ? (W - L - R) * i / (n - 1) : (W - L - R) / 2);
+  const Y = (v) => T + ih * (1 - (v - lo) / (hi - lo));
+  let g = [lo, (lo + hi) / 2, hi].map((v) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${rnd(Y(v))}" y2="${rnd(Y(v))}"/>
+    <text x="${L - 6}" y="${rnd(Y(v)) + 4}" text-anchor="end">${v.toFixed(2)}</text>`).join("");
+  const line = (k, c) => `<polyline fill="none" stroke="var(${c})" stroke-width="2" stroke-linejoin="round" points="${rows.map((r, i) => `${rnd(X(i))},${rnd(Y(r[k]))}`).join(" ")}"/>`;
+  g += line("panel_mean", "--muted") + line("panel_best", "--accent");
+  const step = n > 1 ? (W - L - R) / (n - 1) : W;
+  rows.forEach((r, i) => {
+    const t = `<b>Round ${r.round}</b> · ${ago(r.scored_at)}` + tipLine("Best agent", `${r.panel_best.toFixed(3)} (${esc(r.top_agent || "?")})`)
+      + tipLine("Panel mean", r.panel_mean.toFixed(3)) + tipLine("Split share", pct(r.split / (r.split + r.trivial + r.unsolved + r.duplicate)));
+    g += `<rect class="hit" x="${rnd(X(i) - step / 2)}" y="${T}" width="${rnd(step)}" height="${ih}" data-tip="${esc(t)}"/>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Panel agent scores per round">${g}${xTicks(rows, X, H)}</svg>`;
+}
+
+function historyRow(e) {
+  const rec = (e.recent || []).slice().sort((a, b) => a.round_index - b.round_index);
+  if (!rec.length) return `<div class="muted">No rounds in the window.</div>`;
+  const W = Math.min(900, Math.max(280, ($("#board").clientWidth || 600) - 40)), H = 120, L = 34, T = 6, B = 20, ih = H - T - B;
+  const max = Math.max(...rec.map((r) => r.score ?? 0), 0.05);
+  const bw = (W - L) / rec.length, w = Math.max(2, Math.min(28, bw - 2));
+  let g = [0, max].map((v) => `<line class="grid" x1="${L}" x2="${W}" y1="${rnd(T + ih * (1 - v / max))}" y2="${rnd(T + ih * (1 - v / max))}"/>
+    <text x="${L - 6}" y="${rnd(T + ih * (1 - v / max)) + 4}" text-anchor="end">${v.toFixed(2)}</text>`).join("");
+  rec.forEach((r, i) => {
+    const v = r.score ?? 0, x = L + bw * (i + 0.5), hgt = Math.max(1, ih * v / max);
+    g += `<rect x="${rnd(x - w / 2)}" y="${rnd(T + ih - hgt)}" width="${rnd(w)}" height="${rnd(hgt)}" rx="2" fill="var(--accent)"/>`;
+    const t = `<b>Round ${r.round_index}</b> · ${ago(r.scored_at)}` + tipLine("Score", f3(r.score))
+      + tipLine("Rank in round", `${r.rank ?? "–"} of ${r.columns ?? "–"}`);
+    g += `<rect class="hit" x="${rnd(L + bw * i)}" y="${T}" width="${rnd(bw)}" height="${ih}" data-tip="${esc(t)}"/>`;
+  });
+  const ticks = xTicks(rec.map((r) => ({ round: r.round_index })), (i) => L + bw * (i + 0.5), H);
+  return `<div class="sub" style="margin-bottom:4px">Score per round (${rec.length} rounds in the window). Hover a bar for details.</div>
+    <svg class="hist" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:100%">${g}${ticks}</svg>`;
+}
+
+function render() {
+  const { board, list, rounds } = data;
+  if (list) {
+    const s = list.schedule || {};
+    const lastScored = (list.rounds || []).find((r) => r.status === "scored");
+    $("#strip").innerHTML = [
+      ["Current round", s.current_round],
+      ["Next round epoch", s.next_round_epoch],
+      ["Last scored", lastScored ? `${lastScored.round_index} · ${ago(lastScored.scored_at)}` : "–"],
+      ["Mode", s.mode],
+      ["Block", s.block],
+    ].map(([k, v]) => `<span class="pill">${k}: <b>${esc(v ?? "–")}</b></span>`).join("");
+  }
+  if (board) {
+    const rows = (board.entries || []).map((e, i) => `
+      <tr class="clk ${isMe(e.miner_hotkey) ? "me" : ""}" data-row="${esc(e.miner_hotkey)}">
+        <td class="num"><span class="caret">${open.has(e.miner_hotkey) ? "▾" : "▸"}</span>${i + 1}</td>
+        <td>${who(e)}${e.status && e.status !== "active" ? `<span class="tag">${esc(e.status)}</span>` : ""}</td>
+        <td class="num"><b>${f3(e.score)}</b></td>
+        <td class="num">${esc(e.discriminating_cases)}</td>
+        <td class="num">${esc(e.round_index)}</td>
+        <td class="num">${esc(e.rounds_in_window ?? "–")}</td>
+        <td>${spark(e.recent)}</td>
+        <td class="muted">${ago(e.scored_at)}</td>
+      </tr>${open.has(e.miner_hotkey) ? `<tr class="detail"><td colspan="8">${historyRow(e)}</td></tr>` : ""}`).join("");
+    $("#board").innerHTML = `<thead><tr><th class="num">#</th><th>Miner</th><th class="num">Score</th>
+      <th class="num">Split cases</th><th class="num">Round</th><th class="num">Rounds (7d)</th><th>Trend</th><th>Scored</th></tr></thead>
+      <tbody>${rows || `<tr><td class="muted">No entries.</td></tr>`}</tbody>`;
+  }
+  if (data.hist && data.hist.length) {
+    mixChart($("#mix"), data.hist);
+    solveChart($("#solve"), data.hist);
+  }
+  if (rounds.length) {
+    $("#rounds").innerHTML = rounds.map((d) => {
+      const sm = d.summary || {};
+      const cols = (d.columns || []).slice().sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+      const lines = cols.map((c) => {
+        const n = (c.discriminating || 0) + (c.trivial || 0) + (c.unsolved || 0) + (c.duplicate || 0);
+        const pc = (x) => n ? (100 * (x || 0) / n).toFixed(2) + "%" : "0";
+        return `<div class="row ${isMe(c.miner_hotkey) ? "me" : ""}">
+          <div>${who(c)}</div>
+          <div class="score">${f3(c.score)}</div>
+          <div class="bar" title="split ${c.discriminating} · all solved ${c.trivial} · unsolved ${c.unsolved} · dup ${c.duplicate || 0}">
+            <span style="width:${pc(c.discriminating)};background:var(--split)"></span>
+            <span style="width:${pc(c.trivial)};background:var(--easy)"></span>
+            <span style="width:${pc(c.unsolved)};background:var(--hard)"></span>
+            <span style="width:${pc(c.duplicate)};background:var(--dup)"></span>
+          </div>
+          <div class="counts">${c.discriminating ?? 0} / ${c.trivial ?? 0} / ${c.unsolved ?? 0}${c.duplicate ? " / " + c.duplicate : ""}</div>
+        </div>`;
+      }).join("");
+      const st = (d.standings || []).map((a) => `<tr>
+        <td class="num">${esc(a.rank)}</td><td>${esc(a.agent_name || "–")}${a.agent_version != null ? " v" + esc(a.agent_version) : ""}</td>
+        <td><span class="hk" data-hk="${esc(a.miner_hotkey)}" title="${esc(a.miner_hotkey)}">${esc(short(a.miner_hotkey))}</span></td>
+        <td class="num">${f3(a.common_mean)}</td><td class="num">${esc(a.wins)}-${esc(a.ties)}-${esc(a.losses)}</td></tr>`).join("");
+      return `<div class="card round">
+        <div class="top"><b>Round ${esc(sm.round_index)}</b>
+          <span class="sub">${ago(sm.scored_at)} · ${esc(sm.column_count)} generators · panel of ${esc(sm.panel_size)} agents</span></div>
+        ${lines || `<div class="muted">No columns.</div>`}
+        ${st ? `<details><summary>Solver panel</summary><div class="scroll"><table>
+          <thead><tr><th class="num">Rank</th><th>Agent</th><th>Miner</th><th class="num">Mean</th><th class="num">W-T-L</th></tr></thead>
+          <tbody>${st}</tbody></table></div></details>` : ""}
+      </div>`;
+    }).join("");
+  }
+}
+
+async function load() {
+  try {
+    const [board, list] = await Promise.all([get("board"), get("rounds")]);
+    data.board = board; data.list = list;
+    render();
+    const scored = (list.rounds || []).filter((r) => r.status === "scored").slice(0, 8);
+    const det = await Promise.allSettled(scored.map((r) => get("rounds/" + r.round_index)));
+    data.rounds = det.filter((x) => x.status === "fulfilled").map((x) => x.value);
+    if (!data.rounds.length) $("#rounds").innerHTML = `<div class="card err muted">No scored rounds in the last list.</div>`;
+    $("#upd").textContent = "Loaded " + new Date().toLocaleTimeString() + ".";
+    render();
+  } catch (e) {
+    $("#upd").textContent = "Load failed: " + e.message + ". Retrying in 1 min.";
+  }
+}
+async function loadHist() {
+  try {
+    const r = await fetch("/api/history");
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    data.hist = (await r.json()).rounds;
+    render();
+  } catch (e) {
+    $("#mix").textContent = $("#solve").textContent = "Trend data not available right now.";
+  }
+}
+load();
+loadHist();
+setInterval(load, 60000);
+setInterval(loadHist, 600000);
+let rt;
+addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 150); });
+</script>
+</body>
+</html>
