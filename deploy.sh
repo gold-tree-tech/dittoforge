@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
+# Deploys to Vercel production. Uses VERCEL_TOKEN when set, else the CLI login.
 set -euo pipefail
 cd "$(dirname "$0")"
-T=$(grep '^VERCEL_TOKEN=' ~/dev/weekly/.env | cut -d= -f2- | tr -d '"')
-npx -y vercel@latest deploy --prod --yes --token "$T" "$@"
+npx -y vercel@latest deploy --prod --yes ${VERCEL_TOKEN:+--token "$VERCEL_TOKEN"} "$@"

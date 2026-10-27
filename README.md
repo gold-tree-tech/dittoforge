@@ -9,4 +9,6 @@ Live: https://dittoforge.vercel.app
 - `api/gen.js` passes three fixed API paths through, because the Ditto API sends no CORS header.
 - `api/history.js` builds the per-round trend data and lets the edge cache it for 10 minutes.
 
-Deploy with the Vercel CLI: `vercel deploy --prod`.
+Run locally with `npx vercel dev`. Deploy with `./deploy.sh` (set `VERCEL_TOKEN`, or log in with the Vercel CLI first).
+
+Issues and pull requests are welcome. MIT license.
